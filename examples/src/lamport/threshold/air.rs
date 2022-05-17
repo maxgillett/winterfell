@@ -10,8 +10,8 @@ use super::{
 use crate::utils::{are_equal, is_binary, is_zero, not, EvaluationResult};
 use winterfell::{
     math::{fields::f128::BaseElement, log2, FieldElement, StarkField},
-    Air, AirContext, Assertion, ByteWriter, DefaultEvaluationFrame, EvaluationFrame, ProofOptions,
-    Serializable, TraceInfo, TransitionConstraintDegree,
+    Air, AirContext, Assertion, ByteWriter, DefaultEvaluationFrame, ProofOptions, Serializable,
+    TraceInfo, TransitionConstraintDegree,
 };
 
 // CONSTANTS

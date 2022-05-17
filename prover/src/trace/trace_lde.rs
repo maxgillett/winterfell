@@ -46,11 +46,13 @@ impl<E: FieldElement> TraceLde<E> {
     // --------------------------------------------------------------------------------------------
 
     /// Returns number of columns in the main segment of the execution trace.
+    #[allow(dead_code)]
     pub fn main_trace_width(&self) -> usize {
         self.main_segment_lde.num_cols()
     }
 
     /// Returns number of columns in the auxiliary segments of the execution trace.
+    #[allow(dead_code)]
     pub fn aux_trace_width(&self) -> usize {
         self.aux_segment_ldes
             .iter()

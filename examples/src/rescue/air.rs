@@ -6,8 +6,8 @@
 use super::{rescue, BaseElement, FieldElement, ProofOptions, CYCLE_LENGTH, TRACE_WIDTH};
 use crate::utils::{are_equal, is_zero, not, EvaluationResult};
 use winterfell::{
-    Air, AirContext, Assertion, ByteWriter, DefaultEvaluationFrame, EvaluationFrame, Serializable,
-    TraceInfo, TransitionConstraintDegree,
+    Air, AirContext, Assertion, ByteWriter, DefaultEvaluationFrame, Serializable, TraceInfo,
+    TransitionConstraintDegree,
 };
 
 // CONSTANTS

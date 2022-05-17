@@ -3,7 +3,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree.
 
-use super::{matrix::MultiColumnIter, Matrix};
+use super::Matrix;
 use air::{Air, AuxTraceRandElements, EvaluationFrame, TraceInfo, TraceLayout};
 use math::{polynom, FieldElement, StarkField};
 use utils::collections::Vec;
@@ -177,7 +177,15 @@ pub trait Trace: Sized {
 
         // we check transition constraints on all steps except the last k steps, where k is the
         // number of steps exempt from transition constraints (guaranteed to be at least 1)
-        for i in 0..self.length() - air.context().num_transition_exemptions() {
+        // TODO: Handle constraint-specific exemption nums
+        //
+        let exemption_step = air
+            .context()
+            .num_transition_exemptions()
+            .iter()
+            .map(|n| self.length() - n)
+            .collect::<Vec<_>>();
+        for i in 0..self.length() {
             let step = i;
 
             // build periodic values
@@ -192,12 +200,14 @@ pub trait Trace: Sized {
             main_frame.read_from(self.main_segment(), step, 0, 1);
             air.evaluate_transition(&main_frame, &periodic_values, &mut main_evaluations);
             for (i, &evaluation) in main_evaluations.iter().enumerate() {
-                assert!(
-                    evaluation == Self::BaseField::ZERO,
-                    "main transition constraint {} did not evaluate to ZERO at step {}",
-                    i,
-                    step
-                );
+                if step < exemption_step[i] {
+                    assert!(
+                        evaluation == Self::BaseField::ZERO,
+                        "main transition constraint {} did not evaluate to ZERO at step {}",
+                        i,
+                        step
+                    );
+                }
             }
 
             // evaluate transition constraints for auxiliary trace segments (if any) and make
@@ -216,12 +226,14 @@ pub trait Trace: Sized {
                     &mut aux_evaluations,
                 );
                 for (i, &evaluation) in aux_evaluations.iter().enumerate() {
-                    assert!(
+                    if step < exemption_step[i + main_evaluations.len()] {
+                        assert!(
                         evaluation == E::ZERO,
                         "auxiliary transition constraint {} did not evaluate to ZERO at step {}",
                         i,
                         step
                     );
+                    }
                 }
             }
 

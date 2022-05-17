@@ -21,7 +21,7 @@ pub struct AirContext<B: StarkField> {
     pub(super) ce_blowup_factor: usize,
     pub(super) trace_domain_generator: B,
     pub(super) lde_domain_generator: B,
-    pub(super) num_transition_exemptions: usize,
+    pub(super) transition_exemptions: Vec<usize>,
 }
 
 impl<B: StarkField> AirContext<B> {
@@ -146,6 +146,9 @@ impl<B: StarkField> AirContext<B> {
         let trace_length = trace_info.length();
         let lde_domain_size = trace_length * options.blowup_factor();
 
+        let n_degrees =
+            main_transition_constraint_degrees.len() + aux_transition_constraint_degrees.len();
+
         AirContext {
             options,
             trace_info,
@@ -156,7 +159,7 @@ impl<B: StarkField> AirContext<B> {
             ce_blowup_factor,
             trace_domain_generator: B::get_root_of_unity(log2(trace_length)),
             lde_domain_generator: B::get_root_of_unity(log2(lde_domain_size)),
-            num_transition_exemptions: 1,
+            transition_exemptions: vec![1; n_degrees],
         }
     }
 
@@ -233,8 +236,8 @@ impl<B: StarkField> AirContext<B> {
     /// This is guaranteed to be at least 1 (which is the default value), but could be greater.
     /// The maximum number of exemptions is determined by a combination of transition constraint
     /// degrees and blowup factor specified for the computation.
-    pub fn num_transition_exemptions(&self) -> usize {
-        self.num_transition_exemptions
+    pub fn num_transition_exemptions(&self) -> Vec<usize> {
+        self.transition_exemptions.clone()
     }
 
     // DATA MUTATORS
@@ -250,24 +253,42 @@ impl<B: StarkField> AirContext<B> {
     ///   context, the number of exemptions is too larger for a valid computation of the constraint
     ///   composition polynomial.
     pub fn set_num_transition_exemptions(mut self, n: usize) -> Self {
-        assert!(
-            n > 0,
-            "number of transition exemptions must be greater than zero"
-        );
-        // exemptions which are for more than half the trace are probably a mistake
-        assert!(
-            n <= self.trace_len() / 2,
-            "number of transition exemptions cannot exceed {}, but was {}",
-            self.trace_len() / 2,
-            n
-        );
-        // make sure the composition polynomial can be computed correctly with the specified
-        // number of exemptions
-        for degree in self
+        let exemptions = vec![
+            n;
+            self.main_transition_constraint_degrees.len()
+                + self.aux_transition_constraint_degrees.len()
+        ];
+        self.set_transition_exemptions(exemptions);
+        self
+    }
+
+    /// Write documentation
+    pub fn set_vec_transition_exemptions(mut self, exemptions: Vec<usize>) -> Self {
+        self.set_transition_exemptions(exemptions);
+        self
+    }
+
+    /// Write documentation
+    pub fn set_transition_exemptions(&mut self, exemptions: Vec<usize>) {
+        for (degree, n) in self
             .main_transition_constraint_degrees
             .iter()
             .chain(self.aux_transition_constraint_degrees.iter())
+            .zip(exemptions.iter().copied())
         {
+            assert!(
+                n > 0,
+                "number of transition exemptions must be greater than zero"
+            );
+            // exemptions which are for more than half the trace are probably a mistake
+            assert!(
+                n <= self.trace_len() / 2,
+                "number of transition exemptions cannot exceed {}, but was {}",
+                self.trace_len() / 2,
+                n
+            );
+            // make sure the composition polynomial can be computed correctly with the specified
+            // number of exemptions
             let eval_degree = degree.get_evaluation_degree(self.trace_len());
             let max_exemptions = self.composition_degree() + self.trace_len() - eval_degree;
             assert!(
@@ -277,8 +298,6 @@ impl<B: StarkField> AirContext<B> {
                 n
             )
         }
-
-        self.num_transition_exemptions = n;
-        self
+        self.transition_exemptions = exemptions;
     }
 }

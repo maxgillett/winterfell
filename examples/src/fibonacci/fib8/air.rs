@@ -6,7 +6,7 @@
 use super::{BaseElement, FieldElement, TRACE_WIDTH};
 use crate::utils::are_equal;
 use winterfell::{
-    Air, AirContext, Assertion, DefaultEvaluationFrame, EvaluationFrame, ProofOptions, TraceInfo,
+    Air, AirContext, Assertion, DefaultEvaluationFrame, ProofOptions, TraceInfo,
     TransitionConstraintDegree,
 };
 

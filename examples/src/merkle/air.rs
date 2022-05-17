@@ -6,8 +6,8 @@
 use super::{rescue, BaseElement, FieldElement, HASH_CYCLE_LEN, HASH_STATE_WIDTH, TRACE_WIDTH};
 use crate::utils::{are_equal, is_binary, is_zero, not, EvaluationResult};
 use winterfell::{
-    Air, AirContext, Assertion, ByteWriter, DefaultEvaluationFrame, EvaluationFrame, ProofOptions,
-    Serializable, TraceInfo, TransitionConstraintDegree,
+    Air, AirContext, Assertion, ByteWriter, DefaultEvaluationFrame, ProofOptions, Serializable,
+    TraceInfo, TransitionConstraintDegree,
 };
 
 // MERKLE PATH VERIFICATION AIR

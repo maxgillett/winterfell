@@ -5,8 +5,8 @@
 
 use crate::TraceTable;
 use air::{
-    Air, AirContext, Assertion, DefaultEvaluationFrame, EvaluationFrame, FieldExtension,
-    HashFunction, ProofOptions, TraceInfo, TransitionConstraintDegree,
+    Air, AirContext, Assertion, DefaultEvaluationFrame, FieldExtension, HashFunction, ProofOptions,
+    TraceInfo, TransitionConstraintDegree,
 };
 use math::{fields::f128::BaseElement, FieldElement, StarkField};
 use utils::collections::Vec;

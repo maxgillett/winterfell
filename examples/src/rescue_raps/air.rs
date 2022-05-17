@@ -10,7 +10,7 @@ use super::{
 use crate::utils::{are_equal, not, EvaluationResult};
 use winterfell::{
     Air, AirContext, Assertion, AuxTraceRandElements, ByteWriter, DefaultEvaluationFrame,
-    EvaluationFrame, Serializable, TraceInfo, TransitionConstraintDegree,
+    Serializable, TraceInfo, TransitionConstraintDegree,
 };
 
 // CONSTANTS
