@@ -128,7 +128,13 @@ impl<E: FieldElement> Table<E> {
         if tables.len() == 1 {
             tables.remove(0)
         } else {
-            unimplemented!("merging of multiple tables is not yet implemented")
+            let mut rows: Vec<Vec<E>> = vec![vec![]; tables[0].num_rows()];
+            for n in 0..tables[0].num_rows() {
+                for table in tables.iter() {
+                    rows[n].extend(table.get_row(n));
+                }
+            }
+            Table::from_rows(rows)
         }
     }
 }
