@@ -8,12 +8,6 @@ use utils::{
     DeserializationError, Serializable,
 };
 
-// CONSTANTS
-// ================================================================================================
-
-/// Number of allowed auxiliary trace segments.
-const NUM_AUX_SEGMENTS: usize = 1;
-
 // TRACE INFO
 // ================================================================================================
 /// Information about a specific execution trace.
@@ -65,7 +59,7 @@ impl TraceInfo {
     /// * Length of `meta` is greater than 65535;
     pub fn with_meta(width: usize, length: usize, meta: Vec<u8>) -> Self {
         assert!(width > 0, "trace width must be greater than 0");
-        let layout = TraceLayout::new(width, [0], [0]);
+        let layout = TraceLayout::new(width, &[0], &[0]);
         Self::new_multi_segment(layout, length, meta)
     }
 
@@ -157,8 +151,8 @@ impl TraceInfo {
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct TraceLayout {
     main_segment_width: usize,
-    aux_segment_widths: [usize; NUM_AUX_SEGMENTS],
-    aux_segment_rands: [usize; NUM_AUX_SEGMENTS],
+    aux_segment_widths: Vec<usize>,
+    aux_segment_rands: Vec<usize>,
     num_aux_segments: usize,
 }
 
@@ -175,11 +169,7 @@ impl TraceLayout {
     /// * Number of random elements for an auxiliary trace segment of non-zero width is set to zero.
     /// * Number of random elements for an auxiliary trace segment of zero width is set to non-zero.
     /// * Number of random elements for any auxiliary trace segment is greater than 255.
-    pub fn new(
-        main_width: usize,
-        aux_widths: [usize; NUM_AUX_SEGMENTS],
-        aux_rands: [usize; NUM_AUX_SEGMENTS],
-    ) -> Self {
+    pub fn new(main_width: usize, aux_widths: &[usize], aux_rands: &[usize]) -> Self {
         // validate trace segment widths
         assert!(
             main_width > 0,
@@ -224,8 +214,8 @@ impl TraceLayout {
 
         Self {
             main_segment_width: main_width,
-            aux_segment_widths: aux_widths,
-            aux_segment_rands: aux_rands,
+            aux_segment_widths: aux_widths.to_vec(),
+            aux_segment_rands: aux_rands.to_vec(),
             num_aux_segments,
         }
     }
@@ -306,7 +296,7 @@ impl Deserializable for TraceLayout {
 
         // read and validate auxiliary trace segment widths
         let mut was_zero_width = false;
-        let mut aux_widths = [0; NUM_AUX_SEGMENTS];
+        let mut aux_widths = vec![0];
         for width in aux_widths.iter_mut() {
             *width = source.read_u8()? as usize;
             if *width != 0 {
@@ -330,7 +320,7 @@ impl Deserializable for TraceLayout {
         }
 
         // read and validate number of random elements for each auxiliary trace segment
-        let mut aux_rands = [0; NUM_AUX_SEGMENTS];
+        let mut aux_rands = vec![0];
         for (num_rand_elements, &width) in aux_rands.iter_mut().zip(aux_widths.iter()) {
             *num_rand_elements = source.read_u8()? as usize;
             if width == 0 && *num_rand_elements != 0 {
@@ -351,6 +341,10 @@ impl Deserializable for TraceLayout {
             }
         }
 
-        Ok(TraceLayout::new(main_width, aux_widths, aux_rands))
+        Ok(TraceLayout::new(
+            main_width,
+            &aux_widths[..],
+            &aux_rands[..],
+        ))
     }
 }

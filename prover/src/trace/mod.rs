@@ -6,6 +6,7 @@
 use super::{matrix::MultiColumnIter, Matrix};
 use air::{Air, AuxTraceRandElements, EvaluationFrame, TraceInfo, TraceLayout};
 use math::{polynom, FieldElement, StarkField};
+use utils::collections::Vec;
 
 mod trace_lde;
 pub use trace_lde::TraceLde;

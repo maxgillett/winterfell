@@ -131,7 +131,7 @@ impl<B: StarkField> TraceTable<B> {
 
         let columns = unsafe { (0..width).map(|_| uninit_vector(length)).collect() };
         Self {
-            layout: TraceLayout::new(width, [0], [0]),
+            layout: TraceLayout::new(width, &[0], &[0]),
             trace: Matrix::new(columns),
             meta,
         }
@@ -182,7 +182,7 @@ impl<B: StarkField> TraceTable<B> {
         }
 
         Self {
-            layout: TraceLayout::new(columns.len(), [0], [0]),
+            layout: TraceLayout::new(columns.len(), &[0], &[0]),
             trace: Matrix::new(columns),
             meta: vec![],
         }
