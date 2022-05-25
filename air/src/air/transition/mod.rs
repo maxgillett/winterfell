@@ -31,6 +31,7 @@ pub struct TransitionConstraints<E: FieldElement> {
     main_constraint_degrees: Vec<TransitionConstraintDegree>,
     aux_constraints: Vec<TransitionConstraintGroup<E>>,
     aux_constraint_degrees: Vec<TransitionConstraintDegree>,
+    #[allow(dead_code)]
     divisors: Vec<ConstraintDivisor<E::BaseField>>,
 }
 

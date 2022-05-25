@@ -280,13 +280,13 @@ impl<B: StarkField> AirContext<B> {
                 n > 0,
                 "number of transition exemptions must be greater than zero"
             );
-            // exemptions which are for more than half the trace are probably a mistake
-            assert!(
-                n <= self.trace_len() / 2,
-                "number of transition exemptions cannot exceed {}, but was {}",
-                self.trace_len() / 2,
-                n
-            );
+            //// exemptions which are for more than half the trace are probably a mistake
+            //assert!(
+            //    n <= self.trace_len() / 2,
+            //    "number of transition exemptions cannot exceed {}, but was {}",
+            //    self.trace_len() / 2,
+            //    n
+            //);
             // make sure the composition polynomial can be computed correctly with the specified
             // number of exemptions
             let eval_degree = degree.get_evaluation_degree(self.trace_len());
