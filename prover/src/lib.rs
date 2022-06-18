@@ -227,7 +227,7 @@ pub trait Prover {
         let now = Instant::now();
         let domain = StarkDomain::new(&air);
         #[cfg(feature = "std")]
-        debug!(
+        println!(
             "Built domain of 2^{} elements in {} ms",
             log2(domain.lde_domain_size()),
             now.elapsed().as_millis()
@@ -282,7 +282,7 @@ pub trait Prover {
         // make sure the specified trace (including auxiliary segments) is valid against the AIR.
         // This checks validity of both, assertions and state transitions. We do this in debug
         // mode only because this is a very expensive operation.
-        #[cfg(debug_assertions)]
+        //#[cfg(debug_assertions)]
         trace.validate(&air, &aux_trace_segments, &aux_trace_rand_elements);
 
         // 2 ----- evaluate constraints -----------------------------------------------------------
@@ -298,7 +298,7 @@ pub trait Prover {
         let evaluator = ConstraintEvaluator::new(&air, aux_trace_rand_elements, constraint_coeffs);
         let constraint_evaluations = evaluator.evaluate(trace_commitment.trace_table(), &domain);
         #[cfg(feature = "std")]
-        debug!(
+        println!(
             "Evaluated constraints over domain of 2^{} elements in {} ms",
             log2(constraint_evaluations.num_rows()),
             now.elapsed().as_millis()
@@ -316,7 +316,7 @@ pub trait Prover {
         let now = Instant::now();
         let composition_poly = constraint_evaluations.into_poly()?;
         #[cfg(feature = "std")]
-        debug!(
+        println!(
             "Converted constraint evaluations into {} composition polynomial columns of degree {} in {} ms",
             composition_poly.num_columns(),
             composition_poly.column_degree(),
@@ -374,7 +374,7 @@ pub trait Prover {
         deep_composition_poly.adjust_degree();
 
         #[cfg(feature = "std")]
-        debug!(
+        println!(
             "Built DEEP composition polynomial of degree {} in {} ms",
             deep_composition_poly.degree(),
             now.elapsed().as_millis()
@@ -407,7 +407,7 @@ pub trait Prover {
         let mut fri_prover = FriProver::new(air.options().to_fri_options());
         fri_prover.build_layers(&mut channel, deep_evaluations);
         #[cfg(feature = "std")]
-        debug!(
+        println!(
             "Computed {} FRI layers from composition polynomial evaluations in {} ms",
             fri_prover.num_layers(),
             now.elapsed().as_millis()
@@ -423,7 +423,7 @@ pub trait Prover {
         // generate pseudo-random query positions
         let query_positions = channel.get_query_positions();
         #[cfg(feature = "std")]
-        debug!(
+        println!(
             "Determined {} query positions in {} ms",
             query_positions.len(),
             now.elapsed().as_millis()
@@ -448,7 +448,7 @@ pub trait Prover {
         // build the proof object
         let proof = channel.build_proof(trace_queries, constraint_queries, fri_proof);
         #[cfg(feature = "std")]
-        debug!("Built proof object in {} ms", now.elapsed().as_millis());
+        println!("Built proof object in {} ms", now.elapsed().as_millis());
 
         Ok(proof)
     }
