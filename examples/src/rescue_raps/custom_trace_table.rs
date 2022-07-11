@@ -6,7 +6,7 @@
 use core_utils::{collections::Vec, uninit_vector};
 use winterfell::{
     math::{log2, FieldElement, StarkField},
-    EvaluationFrame, Matrix, Trace, TraceInfo, TraceLayout,
+    Matrix, Trace, TraceInfo, TraceLayout,
 };
 
 // RAP TRACE TABLE
@@ -99,7 +99,7 @@ impl<B: StarkField> RapTraceTable<B> {
 
         let columns = unsafe { (0..width).map(|_| uninit_vector(length)).collect() };
         Self {
-            layout: TraceLayout::new(width, [3], [3]),
+            layout: TraceLayout::new(width, &[3], &[3]),
             trace: Matrix::new(columns),
             meta,
         }

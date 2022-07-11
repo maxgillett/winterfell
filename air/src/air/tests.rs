@@ -4,7 +4,7 @@
 // LICENSE file in the root directory of this source tree.
 
 use super::{
-    Air, AirContext, Assertion, DefaultEvaluationFrame, EvaluationFrame, ProofOptions, TraceInfo,
+    Air, AirContext, Assertion, DefaultEvaluationFrame, ProofOptions, TraceInfo,
     TransitionConstraintDegree,
 };
 use crate::{AuxTraceRandElements, FieldExtension, HashFunction};

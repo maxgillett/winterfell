@@ -5,8 +5,8 @@
 
 use super::{BaseElement, FieldElement, ProofOptions, ALPHA, FORTY_TWO};
 use winterfell::{
-    Air, AirContext, Assertion, ByteWriter, DefaultEvaluationFrame, EvaluationFrame, Serializable,
-    TraceInfo, TransitionConstraintDegree,
+    Air, AirContext, Assertion, ByteWriter, DefaultEvaluationFrame, Serializable, TraceInfo,
+    TransitionConstraintDegree,
 };
 
 // PUBLIC INPUTS

@@ -6,7 +6,7 @@
 use crate::utils::are_equal;
 use winterfell::{
     math::{fields::f128::BaseElement, FieldElement},
-    Air, AirContext, Assertion, DefaultEvaluationFrame, EvaluationFrame, ProofOptions, TraceInfo,
+    Air, AirContext, Assertion, DefaultEvaluationFrame, ProofOptions, TraceInfo,
     TransitionConstraintDegree,
 };
 

@@ -6,8 +6,7 @@
 use super::{BaseElement, FieldElement, ProofOptions, TRACE_WIDTH};
 use crate::utils::are_equal;
 use winterfell::{
-    Air, AirContext, Assertion, DefaultEvaluationFrame, EvaluationFrame, TraceInfo,
-    TransitionConstraintDegree,
+    Air, AirContext, Assertion, DefaultEvaluationFrame, TraceInfo, TransitionConstraintDegree,
 };
 
 // FIBONACCI AIR

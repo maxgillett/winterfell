@@ -33,6 +33,10 @@ pub struct ConstraintEvaluationTable<E: FieldElement> {
     aux_transition_evaluations: Vec<Vec<E>>,
     #[cfg(debug_assertions)]
     expected_transition_degrees: Vec<usize>,
+    #[cfg(debug_assertions)]
+    main_divisors: Vec<ConstraintDivisor<E::BaseField>>,
+    #[cfg(debug_assertions)]
+    aux_divisors: Vec<ConstraintDivisor<E::BaseField>>,
 }
 
 impl<E: FieldElement> ConstraintEvaluationTable<E> {
@@ -64,6 +68,8 @@ impl<E: FieldElement> ConstraintEvaluationTable<E> {
         domain: &StarkDomain<E::BaseField>,
         divisors: Vec<ConstraintDivisor<E::BaseField>>,
         transition_constraints: &TransitionConstraints<E>,
+        main_divisors: Vec<ConstraintDivisor<E::BaseField>>,
+        aux_divisors: Vec<ConstraintDivisor<E::BaseField>>,
     ) -> Self {
         let num_columns = divisors.len();
         let num_rows = domain.ce_domain_size();
@@ -72,8 +78,12 @@ impl<E: FieldElement> ConstraintEvaluationTable<E> {
 
         // collect expected degrees for all transition constraints to compare them against actual
         // degrees; we do this in debug mode only because this comparison is expensive
-        let expected_transition_degrees =
-            build_transition_constraint_degrees(transition_constraints, domain.trace_length());
+        let expected_transition_degrees = build_transition_constraint_degrees(
+            transition_constraints,
+            domain.trace_length(),
+            main_divisors.clone(),
+            aux_divisors.clone(),
+        );
 
         ConstraintEvaluationTable {
             evaluations: uninit_matrix(num_columns, num_rows),
@@ -83,6 +93,8 @@ impl<E: FieldElement> ConstraintEvaluationTable<E> {
             main_transition_evaluations: uninit_matrix(num_tm_columns, num_rows),
             aux_transition_evaluations: uninit_matrix(num_ta_columns, num_rows),
             expected_transition_degrees,
+            main_divisors,
+            aux_divisors,
         }
     }
 
@@ -194,14 +206,18 @@ impl<E: FieldElement> ConstraintEvaluationTable<E> {
 
     #[cfg(debug_assertions)]
     pub fn validate_transition_degrees(&mut self) {
-        // evaluate transition constraint divisor (which is assumed to be the first one in the
-        // divisor list) over the constraint evaluation domain. this is used later to compute
-        // actual degrees of transition constraint evaluations.
-        let div_values = evaluate_divisor::<E::BaseField>(
-            &self.divisors[0],
-            self.num_rows(),
-            self.domain_offset,
-        );
+        // evaluate transition constraint divisor over the constraint evaluation domain.
+        // this is used later to compute actual degrees of transition constraint evaluations.
+        let main_div_values = self
+            .main_divisors
+            .iter()
+            .map(|div| evaluate_divisor::<E::BaseField>(&div, self.num_rows(), self.domain_offset))
+            .collect::<Vec<_>>();
+        let aux_div_values = self
+            .aux_divisors
+            .iter()
+            .map(|div| evaluate_divisor::<E::BaseField>(&div, self.num_rows(), self.domain_offset))
+            .collect::<Vec<_>>();
 
         // collect actual degrees for all transition constraints by interpolating saved
         // constraint evaluations into polynomials and checking their degree; also
@@ -211,15 +227,16 @@ impl<E: FieldElement> ConstraintEvaluationTable<E> {
         let inv_twiddles = fft::get_inv_twiddles::<E::BaseField>(self.num_rows());
 
         // first process transition constraint evaluations for the main trace segment
-        for evaluations in self.main_transition_evaluations.iter() {
-            let degree = get_transition_poly_degree(evaluations, &inv_twiddles, &div_values);
+        for (n, evaluations) in self.main_transition_evaluations.iter().enumerate() {
+            let degree =
+                get_transition_poly_degree(evaluations, &inv_twiddles, &main_div_values[n]);
             actual_degrees.push(degree);
             max_degree = core::cmp::max(max_degree, degree);
         }
 
         // then process transition constraint evaluations for auxiliary trace segments
-        for evaluations in self.aux_transition_evaluations.iter() {
-            let degree = get_transition_poly_degree(evaluations, &inv_twiddles, &div_values);
+        for (n, evaluations) in self.aux_transition_evaluations.iter().enumerate() {
+            let degree = get_transition_poly_degree(evaluations, &inv_twiddles, &aux_div_values[n]);
             actual_degrees.push(degree);
             max_degree = core::cmp::max(max_degree, degree);
         }
@@ -434,16 +451,38 @@ fn get_inv_evaluation<B: StarkField>(
 fn build_transition_constraint_degrees<E: FieldElement>(
     constraints: &TransitionConstraints<E>,
     trace_length: usize,
+    main_divisors: Vec<ConstraintDivisor<E::BaseField>>,
+    aux_divisors: Vec<ConstraintDivisor<E::BaseField>>,
 ) -> Vec<usize> {
     let mut result = Vec::new();
 
-    for degree in constraints.main_constraint_degrees() {
-        result.push(degree.get_evaluation_degree(trace_length) - constraints.divisor().degree())
+    for (constraint_degree, divisor) in constraints
+        .main_constraint_degrees()
+        .iter()
+        .zip(main_divisors)
+    {
+        result.push(constraint_degree.get_evaluation_degree(trace_length) - divisor.degree())
     }
 
-    for degree in constraints.aux_constraint_degrees() {
-        result.push(degree.get_evaluation_degree(trace_length) - constraints.divisor().degree())
+    for (constraint_degree, divisor) in constraints
+        .aux_constraint_degrees()
+        .iter()
+        .zip(aux_divisors)
+    {
+        result.push(constraint_degree.get_evaluation_degree(trace_length) - divisor.degree())
     }
+
+    //for constraint in constraints.main_constraints() {
+    //    result.push(
+    //        constraint.degree().get_evaluation_degree(trace_length) - constraint.divisor().degree(),
+    //    )
+    //}
+
+    //for constraint in constraints.aux_constraints() {
+    //    result.push(
+    //        constraint.degree().get_evaluation_degree(trace_length) - constraint.divisor().degree(),
+    //    )
+    //}
 
     result
 }
